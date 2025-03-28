@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cisco Security Configuration Generator</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Generate optimized Cisco security configurations for IOS-XE and NX-OS devices">
+    <meta name="keywords" content="Cisco, Configuration, IOS-XE, NX-OS, 802.1X, RADIUS, TACACS+, Portnox">
+    <meta name="author" content="Cisco Config Generator">
+</head>
+<body>
+    <div id="app" class="container-fluid">
+        <header class="mb-4 text-center p-3 bg-dark text-white">
+            <h1>Cisco Security Configuration Generator</h1>
+            <p class="mb-0">Based on wiresandwi.fi best practices and optimized for Portnox integration</p>
+        </header>
+
+        <div class="row">
+            <!-- Left sidebar with navigation -->
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        Configuration Steps
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="#platform" 
+                           @click="currentStep = 'platform'" 
+                           :class="['list-group-item list-group-item-action', currentStep === 'platform' ? 'active' : '']">
+                           1. Platform Selection
+                        </a>
+                        <a href="#basic-info" 
+                           @click="currentStep = 'basicInfo'" 
+                           :class="['list-group-item list-group-item-action', currentStep === 'basicInfo' ? 'active' : '']">
+                           2. Basic Settings
+                        </a>
+                        <a href="#aaa" 
+                           @click="currentStep = 'aaa'" 
+                           :class="['list-group-item list-group-item-action', currentStep === 'aaa' ? 'active' : '']">
+                           3. AAA Configuration
+                        </a>
+                        <a href="#radius" 
+                           @click="currentStep = 'radius'" 
+                           :class="['list-group-item list-group-item-action', currentStep === 'radius' ? 'active' : '']">
+                           4. RADIUS Servers
+                        </a>
+                        <a href="#tacacs" 
+                           @click="currentStep = 'tacacs'" 
+                           :class="['list-group-item list-group-item-action', currentStep === 'tacacs' ? 'active' : '']">
+                           5. TACACS+ Servers
+                        </a>
+                        <a href="#dot1x" 
+                           @click="currentStep = 'dot1x'" 
+                           :class="['list-group-item list-group-item-action', currentStep === 'dot1x' ? 'active' : '']">
+                           6. 802.1X Settings
+                        </a>
+                        <a href="#coa" 
+                           @click="currentStep = 'coa'" 
+                           :class="['list-group-item list-group-item-action', currentStep === 'coa' ? 'active' : '']">
+                           7. CoA Configuration
+                        </a>
+                        <a href="#radsec" 
+                           @click="currentStep = 'radsec'" 
+                           :class="['list-group-item list-group-item-action', currentStep === 'radsec' ? 'active' : '']"
+                           v-if="config.radius && config.radius.type === '2'">
+                           8. RADSEC Configuration
+                        </a>
+                        <a href="#device-tracking" 
+                           @click="currentStep = 'deviceTracking'" 
+                           :class="['list-group-item list-group-item-action', currentStep === 'deviceTracking' ? 'active' : '']">
+                           9. Device Tracking
+                        </a>
+                        <a href="#ibns" 
+                           @click="currentStep = 'ibns'" 
+                           :class="['list-group-item list-group-item-action', currentStep === 'ibns' ? 'active' : '']"
+                           v-if="config.platform === 'IOS-XE'">
+                           10. IBNS 2.0 Configuration
+                        </a>
+                        <a href="#portnox" 
+                           @click="currentStep = 'portnox'" 
+                           :class="['list-group-item list-group-item-action', currentStep === 'portnox' ? 'active' : '']">
+                           11. Portnox Integration
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Progress and action buttons -->
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <div class="progress mb-3">
+                            <div class="progress-bar" :style="{width: progress + '%'}"></div>
+                        </div>
+                        <button class="btn btn-success w-100 mb-2" @click="generateConfig">Generate Configuration</button>
+                        <div class="btn-group w-100">
+                            <button class="btn btn-outline-primary" @click="saveConfiguration">Save</button>
+                            <button class="btn btn-outline-secondary" @click="loadConfiguration">Load</button>
+                            <button class="btn btn-outline-dark" @click="downloadConfiguration" :disabled="!generatedConfig">Download</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content area -->
+            <div class="col-md-9">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Dynamic component based on current step -->
+                        <component :is="currentStep" 
+                                  :config="config" 
+                                  @update:config="updateConfig" 
+                                  @next-step="nextStep">
+                        </component>
+                    </div>
+                </div>
+
+                <!-- Generated configuration output -->
+                <div class="card mt-3" v-if="generatedConfig">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        Generated Configuration
+                        <button class="btn btn-sm btn-light" @click="copyToClipboard">Copy</button>
+                    </div>
+                    <div class="card-body">
+                        <pre class="config-output">{{ generatedConfig }}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue.js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.45/dist/vue.global.min.js"></script>
+    <!-- Templates -->
+    <script src="js/templates/iosxe.js"></script>
+    <script src="js/templates/nxos.js"></script>
+    <!-- Components -->
+    <script src="js/components/platform.js"></script>
+    <script src="js/components/basicInfo.js"></script>
+    <script src="js/components/aaa.js"></script>
+    <script src="js/components/radius.js"></script>
+    <script src="js/components/tacacs.js"></script>
+    <script src="js/components/dot1x.js"></script>
+    <script src="js/components/coa.js"></script>
+    <script src="js/components/radsec.js"></script>
+    <script src="js/components/deviceTracking.js"></script>
+    <script src="js/components/ibns.js"></script>
+    <script src="js/components/portnox.js"></script>
+    <!-- Main App -->
+    <script src="js/app.js"></script>
+</body>
+</html>

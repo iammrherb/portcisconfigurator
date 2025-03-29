@@ -90,6 +90,21 @@ function generateIosXeConfig(config) {
     output += `!\n`;
     
     // ... More configuration sections would follow here
+    if (config.ibns.templates === '1') {
+    output += `! IBNS 2.0 Interface Templates\n`;
+    if (config.ibns.openTemplate === '1') {
+        output += `template ${config.ibns.openTemplateName}\n`;
+        output += ` switchport mode access\n`;
+        output += ` access-session host-mode multi-domain\n`;
+        output += ` access-session port-control auto\n`;
+        output += ` dot1x pae authenticator\n`;
+        output += ` dot1x timeout tx-period ${config.dot1x.txPeriod}\n`;
+        output += ` dot1x max-reauth-req ${config.dot1x.maxReauth}\n`;
+        output += ` service-policy type control subscriber ${config.ibns.policyMapName}\n`;
+        output += ` no shutdown\n`;
+        output += `!\n`;
+    }
+}
     // RADIUS server configuration, TACACS+, 802.1X, etc.
     
     return output;

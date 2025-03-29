@@ -205,3 +205,19 @@ if ('serviceWorker' in navigator) {
             });
     });
 }
+app.component('platform', {
+    template: `
+        <div>
+            <h3>Platform Selection</h3>
+            <select class="form-select" v-model="platformSelection">
+                <option value="">Select a platform</option>
+                <option value="IOS-XE">IOS-XE (Catalyst)</option>
+                <option value="NX-OS">NX-OS (Nexus)</option>
+                <option value="IOS" disabled>IOS (Coming Soon)</option>
+                <option value="ASA" disabled>ASA (Coming Soon)</option>
+            </select>
+            <!-- ... rest of template -->
+        </div>
+    `,
+    // ... rest of component
+});
